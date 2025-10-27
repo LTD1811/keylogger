@@ -12,8 +12,8 @@ import re
 import base64
 
 # Cấu hình email
-EMAIL_ADDRESS = ""  
-EMAIL_PASSWORD = ""    
+EMAIL_ADDRESS = "luutiendat1811@gmail.com"  
+EMAIL_PASSWORD = "dbodaxtewdwhrlmi"    
 EMAIL_CHAR_LIMIT = 50                   
 
 # Cấu hình mode

